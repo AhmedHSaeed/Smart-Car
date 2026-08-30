@@ -1,0 +1,6 @@
+#Required Libraries for The Project to Work 
+#Install via Arduino IDE Library Manager
+
+- AsyncTCP by dvarrel (v1.1.4)
+- ESPAsyncWebServer by lacamera (v3.0.1)
+- WiFi (built-in with ESP32)
