@@ -5,8 +5,8 @@
 // ====================== CONFIGURATION ======================
 
 // Wi-Fi
-const char* ssid = "Robot_Controller";
-const char* password = "12345678";
+const char* ssid = "Car_Controller";
+const char* password = "TechBros";
 const IPAddress local_ip(192, 168, 4, 1);
 const IPAddress gateway(192, 168, 4, 1);
 const IPAddress subnet(255, 255, 255, 0);
@@ -24,7 +24,7 @@ const IPAddress subnet(255, 255, 255, 0);
 #define SENSOR_A_ECHO 19
 #define SENSOR_B_TRIG 33   // right
 #define SENSOR_B_ECHO 32
-#define SENSOR_C_TRIG 4    // center (المعتمد للكشف الأمامي)
+#define SENSOR_C_TRIG 4    // center
 #define SENSOR_C_ECHO 5
 
 // PWM
@@ -33,11 +33,11 @@ const IPAddress subnet(255, 255, 255, 0);
 #define PWM_CHANNEL_LEFT  0
 #define PWM_CHANNEL_RIGHT 1
 
-// Sensor Constants (تم رفع المدى)
+// Sensor Constants 
 #define SENSOR_TIMEOUT 12000
-#define OBSTACLE_CRITICAL 20   // التوقف الكامل عند 10 سم
-#define OBSTACLE_MINIMUM 10    // طوارئ قصوى
-#define SLOW_ZONE 80           // غير مستخدم حالياً
+#define OBSTACLE_CRITICAL 20   // fully stop
+#define OBSTACLE_MINIMUM 10    // emergency 
+#define SLOW_ZONE 80           // Not used now
 
 // Motor Command IDs
 #define MOTOR_STOP 0
@@ -64,7 +64,7 @@ const IPAddress subnet(255, 255, 255, 0);
 struct SensorData {
   float distanceA;        // left
   float distanceB;        // right
-  float distanceC;        // center (primary)
+  float distanceC;        // center 
   float distanceCenter;   // مرادف لـ distanceC للتوافق
   float obstacleAngle;
 };
@@ -107,7 +107,6 @@ uint32_t stuntStartTime = 0;
 uint8_t stuntPhase = 0;
 AsyncWebServer server(80);
 
-// Filter buffers (تم التعديل إلى 3 لزيادة السرعة والحد من التأخير)
 float filterA[3] = {0}, filterB[3] = {0}, filterC[3] = {0};
 uint8_t filterIndex = 0;
 
@@ -150,7 +149,6 @@ void setup() {
 void loop() {
   uint32_t now = millis();
 
-  // تم تقليل وقت التحديث إلى 30 ملي ثانية لزيادة سرعة الملاحظة
   if (now - carState.lastSensorReadTime >= 30) {
     carState.lastSensorReadTime = now;
     
@@ -362,8 +360,8 @@ void executeCommand(uint8_t cmd, uint8_t speed) {
 // Assisted: توقف فوري ولحظي عند وجود عائق في اتجاه الحركة على مسافة 10 سم
 // Assisted: توقف فوري ولحظي وقوي عند مسافة 10 سم
 void updateAssistedMode(uint8_t userCmd, uint8_t userSpeed) {
-  // مسافة 30 سم ممتازة للسرعات العالية، الفرامل ستوقفها قبل العائق بـ 15-20 سم تقريباً
-  float criticalDist = 30.0; 
+
+  float criticalDist = 15.0; 
   
   bool obstacleForward = (userCmd == MOTOR_FORWARD && sensors.distanceC <= criticalDist);
   bool obstacleLeft    = (userCmd == MOTOR_LEFT && sensors.distanceA <= criticalDist);
@@ -380,7 +378,6 @@ void updateAssistedMode(uint8_t userCmd, uint8_t userSpeed) {
     executeCommand(userCmd, userSpeed);
   }
 }
-// Autonomous: تجنب العوائق بذكاء باستخدام الحساسات الثلاثة
 // Autonomous: تجنب العوائق بذكاء مع نظام المناورة المتسلسلة (رجوع ثم التفاف)
 void updateAutonomousMode() {
   // متغيرات ثابتة (Static) لحفظ حالة المناورة بين كل استدعاء للدالة
